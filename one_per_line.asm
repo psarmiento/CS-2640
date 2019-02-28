@@ -1,9 +1,8 @@
 .data
-array:		.space	40
+array:		.space	80
 array_size:	.word	20	
 prompt:		.asciiz "Enter an integer: "
 newLine:	.asciiz "\n"
-test:		.asciiz "Test"
 
 .text
 
@@ -51,11 +50,6 @@ syscall			# print array value
 # print new line 
 li $v0, 4
 la $a0, newLine
-syscall
-
-# test 
-li $v0, 4
-la $a0, test
 syscall
 
 addi $t2, $t2, 1	# update value for incrementor by 1

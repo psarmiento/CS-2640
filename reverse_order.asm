@@ -90,6 +90,7 @@ addi $t3, $zero, 0		# t3 keeps track of how many numbers have been printed
 
 # loop to print numbers per line 	
 n_per_line:
+
 # print int value in array 
 lw $t4, array($t2)
 li $v0, 1
@@ -104,18 +105,18 @@ syscall
 addi $t2, $t2, 4		# update offset value 
 addi $t3, $t3, 1		# update how many times printed number 
 
-sub $t4, $t0, $t3		# if t4 is less than t1, go to new loop to print rest of numbers 
-slt $t5, $t4, $t1
-
 beq $t3, $t1, print_New_Line	# keep printing until t3 and t1 are equal 
+j n_per_line
 
 print_New_Line:
 li $v0, 4			# print new line 
 la $a0, newLine
 syscall
+
+sub $t4, $t0, $t3		# if t4 is less than t1, go to new loop to print rest of numbers 
+slt $t5, $t4, $t1
 beq $t5, 1, n_per_line_exit
 
-j n_per_line
 n_per_line_exit:
 
 exit:

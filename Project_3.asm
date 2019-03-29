@@ -49,6 +49,7 @@ move $s0, $v0					# store number of input inside of v0 into s0
 	j insert_Loop
 	exit_insert_Loop:
 	
+	
 	addi $t0, $zero, 0			# printing loop for array
 	addi $a1, $zero, 0			# reset position of array
 	print_loop:
@@ -82,36 +83,45 @@ loadInput:				.word 4
 # a1 = address of array 
 # a2 = user input being inserted 
 insertArr:
-addi $sp, $sp, -12				# allocate some space for local variables on the stack 
-move $s0, $a0					# move number of inputs into s0
-move $s1, $a1					# move array address into s1
-move $s2, $a2					# move user input into s2
-sw $s0, 0($sp)					# save s0 on stack (number of input)
-sw $s1, 0($sp)
-sw $s2, 0($sp)					# save s2 on stack 
+addi $a1, $zero, 0				# start at beginning of the array 
+move $s1, $a0					# move number if inputs into s1 
 
-addi $s1, $zero, 0				# start at the beginning of the loop
-mul $s1, $s0, 4					# s1 = s0 * 4
-addi $s1, $s1, -4				# properly align s1 
-						# inserted element goes at end of array 
-	# this loop will find the proper place for user's input to be inserted into 
-	# all elements will first be shifted and then compared to see if the value 
-	# is in the proper place 
-	insert:
-	#beq $t2, 0, exit_insert		# if t2 = 0, break from loop 
-	lw $t3, array($s1)			# load first value in array into t3
-	slt $t2, $t3, $s2			# if (t3 < t1) then insert t1 into array and exit loop 
-	beq $t2, 1, pos_found			# branch if t2 == 1
-	addi $s1, $s1, 4			# shift a1 into the next position, and store the array value
-	sw $t3, array($s1)
-	addi $s1, $s1, -4			# move a1 back to original position 
-	sw $s2, array($s1)			# temporarily store user input into array 
-	addi $s1, $s1, -4			# increment a1 by -4
-	j insert
-	exit_insert:
+	find_pos:
+	lw $t1, array($a1)			# load current array value 
+	slt $t2, $a2, $t1			# if a2 < t1   t2 == 1
 	
-	pos_found:
-	sw $s2, array($s1)
-	addi $sp, $sp, 12
+	beq $t1, $zero, zero			# no 0s in array, if the array is empty, then insert the value
+	beq $t2, 1, exit_find_pos		# break if position in array is found otherwise, iterate through array
+	
+	
+	addi $a1, $a1, 4			# update a1 and s1
+	addi $s1, $s1, -1
+	j find_pos
+	exit_find_pos:
+
+	# save user input
+	sw $a2, array($a1)
+	# shifts all other values down 
+	shift:
+	addi $a1, $a1, 4
+	addi $s1, $s1, -1
+	
+	lw $t2, array($a1)			# load next value to be shifted
+	
+	sw $t1, array($a1)			# save previous value
+	
+	move $t1, $t2				# move previous into next value variable
+	
+	beq $s1, $zero, exit_shift
+	j shift
+	exit_shift:
 	jr $ra
 	
+	# inserts user input into start of array if there are no other elements
+	zero:
+	sw $a2, array($a1)
+	jr $ra
+
+
+
+

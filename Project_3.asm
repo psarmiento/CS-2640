@@ -1,7 +1,9 @@
-# Project 3
-# Smart thing to do when inserting...
-# start from the top down, and shift values while also sorting 
-# TO DO LIST: 1) Work on sorting function, making sure to properly store a value into array 
+# Who:  Paul Sarmiento
+# What: Project_3.asm
+# Why:  A template to be used for all CS 2640 labs
+# When: Due April 2, 2019
+# How:  This program sorts input in ascending order and allows the user to search for 
+#	values in the array 
 .data
 # array to hold sorted integers in ascending order 
 array:					.space 200 
@@ -69,22 +71,27 @@ move $s0, $v0					# store number of input inside of v0 into s0
 	j print_loop
 	exit_print:
 
+jal searchVal
+
 exit:
 li $v0, 10
 syscall
 
 
 .data
-loadInput:				.word 4		
+loadInput:				.word 4	
+search:					.asciiz "Enter an integer to search for: "	
+valFound:				.asciiz "Value is in the array\n"
+valNotFound:				.asciiz "Value is not in the array\n" 
 .text
-# This function should insert an integer entered from user input (signed integer ie positive)
+# This function should insert an integer entered from user input
 # and sort it into an array in ascending order 
 # a0 = number of elements to be inserted 
 # a1 = address of array 
 # a2 = user input being inserted 
 insertArr:
 addi $a1, $zero, 0				# start at beginning of the array 
-move $s1, $a0					# move number if inputs into s1 
+move $s1, $a0					# move number of inputs into s1 
 
 	find_pos:
 	lw $t1, array($a1)			# load current array value 
@@ -122,6 +129,42 @@ move $s1, $a0					# move number if inputs into s1
 	sw $a2, array($a1)
 	jr $ra
 
+# Allow the user to search for values in the array 
+# a1 = address of array 
+searchVal:
+move $t1, $s0					# set t1 to number of elements in array 
+li $v0, 4
+la $a0, newLine					# print new line 
+syscall 
 
+li $v0, 4					# prompt user to search for a value in the array 
+la $a0, search 
+syscall 
 
+li $v0, 5 					# get user input 
+syscall 
 
+addi $a1, $zero, 0				# start at beginning of array 
+	search_loop:
+	lw $t0, array($a1)			# load current array value 
+	beq $v0, $t0, found			# if value is found, branch to seperate function to return 1 		
+	beq $t1, $0, not_found		   	# if entire array has been processed, then value not found
+	addi $a1, $a1, 4			# update array value 
+	addi $t1, $t1, -1			# if t1 goes to 0, then value has not been found 
+	j search_loop
+	exit_search_loop:
+	
+	
+	not_found:
+	addi $v0, $zero, 0			# return 0, value not found 
+	li $v0, 4
+	la $a0, valNotFound			# notify user value has not been found 
+	syscall
+	j searchVal				# jump back to search again
+	
+	found:
+	addi $v0, $zero, 1 			# return 1, value found 
+	li $v0, 4
+	la $a0, valFound			# notify user value has been found 
+	syscall 
+	jal searchVal
